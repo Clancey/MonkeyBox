@@ -4,6 +4,7 @@ using MonoTouch.Foundation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Threading;
 
 namespace MonkeyBox
 {
@@ -33,67 +34,80 @@ namespace MonkeyBox
 				return;
 			DBError error;
 			store = DBDatastore.OpenDefaultStoreForAccount (DBAccountManager.SharedManager.LinkedAccount, out error);
+			var sync = store.Sync (null);
 			store.AddObserver (store, () => {
 				LoadData();
 			});
 		}
 		public Dictionary<string,DBRecord> records = new Dictionary<string, DBRecord> ();
 		public Dictionary<string,Monkey> monkeyDictionary = new Dictionary<string, Monkey> ();
+
 		public Task LoadData ()
 		{
 			var task = Task.Factory.StartNew (() => {
 				var table = store.GetTable ("monkeys");
-				DBError error;
-				var results = table.Query (new NSDictionary (), out error);
-
-				//This deletes old data
-//				foreach(var result in results)
-//				{
-//					result.DeleteRecord();
-//				}
-//				store.Sync(null);
-//				populateMonkeys();
-//				results = table.Query (new NSDictionary (), out error);
-				///
-				records = results.ToDictionary(x=> x.Fields["Name"].ToString(),x=> x);
+				DBError error = new DBError ();
+				var results = table.Query (null, out error);
+				
 				if (results.Length == 0) {
 					populateMonkeys ();
 					return;
 				}
-				foreach(var result in results)
-				{
-					var name = result.Fields["Name"].ToString();
-					Monkey monkey;
-					monkeyDictionary.TryGetValue(name, out monkey);
-					if(monkey == null)
-					{
-						monkey = result.ToMonkey();
-						monkeyDictionary.Add(name,monkey);
-					}
-					else
-					{
-						monkey.Update(result);
-					}
-				}
-				Monkeys = monkeyDictionary.Select(x=> x.Value).ToArray();
-				store.BeginInvokeOnMainThread(()=>{
-					if(MonkeysUpdated != null)
-						MonkeysUpdated(this,EventArgs.Empty);
-				});
+				ProccessResults (results);
 			});
 			return task;
 		}
 
+		void ProccessResults(DBRecord[] results)
+		{
+			records = results.ToDictionary(x=> x.Fields["Name"].ToString(),x=> x);
+			foreach(var result in results)
+			{
+				var name = result.Fields["Name"].ToString();
+				Monkey monkey;
+				monkeyDictionary.TryGetValue(name, out monkey);
+				if(monkey == null)
+				{
+					monkey = result.ToMonkey();
+					monkeyDictionary.Add(name,monkey);
+				}
+				else
+				{
+					monkey.Update(result);
+				}
+			}
+			Monkeys = monkeyDictionary.Select(x=> x.Value).OrderBy(x=> x.Z).ToArray();
+			store.BeginInvokeOnMainThread(()=>{
+				if(MonkeysUpdated != null)
+					MonkeysUpdated(this,EventArgs.Empty);
+			});
+		}
+
+		public void DeleteAll()
+		{
+			var table = store.GetTable ("monkeys");
+			DBError error;
+			var results = table.Query (new NSDictionary (), out error);
+			foreach(var result in results)
+			{
+				result.DeleteRecord();
+			}
+			store.Sync(null);
+		}
+
+		bool populated = false;
 		void populateMonkeys ()
 		{
+			if (populated)
+				return;
+			populated = true;
 			Monkeys = Monkey.GetAllMonkeys ();
 			var table = store.GetTable ("monkeys");
 			foreach (var monkey in Monkeys) {
-				table.Insert (monkey.ToDictionary ());
+				bool inserted = false;
+				table.GetOrInsertRecord(monkey.Name,monkey.ToDictionary (),inserted,new DBError());
 			}
-			DBError error = null;
-			store.Sync (error);
-			Console.WriteLine (error);
+			store.Sync (null);
 
 		}
 		public void Update(Monkey monkey)
