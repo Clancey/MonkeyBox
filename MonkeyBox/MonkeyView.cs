@@ -36,6 +36,7 @@ namespace MonkeyBox
 			var transform = CGAffineTransform.MakeIdentity ();
 			transform.Rotate (monkey.Rotation);
 			transform.Scale (monkey.Scale, monkey.Scale);
+			this.Transform = transform;
 
 			var x = bounds.Width * monkey.X;
 			var y = bounds.Height * monkey.Y;
