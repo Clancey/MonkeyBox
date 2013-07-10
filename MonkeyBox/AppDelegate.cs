@@ -39,7 +39,7 @@ namespace MonkeyBox
 				this.BeginInvokeOnMainThread (() => {
 					var account = DBAccountManager.SharedManager.LinkedAccount;
 					if (account != null) {
-						SetupDropbox();
+						SetupDropbox ();
 					} else
 						manager.LinkFromController (window.RootViewController);
 				});
@@ -57,17 +57,19 @@ namespace MonkeyBox
 			// you can specify it here.
 			UIApplication.Main (args, null, "AppDelegate");
 		}
+
 		public override bool OpenUrl (UIApplication application, NSUrl url, string sourceApplication, NSObject annotation)
 		{
 			var account = DBAccountManager.SharedManager.HandleOpenURL (url);
 			SetupDropbox ();
 			return account != null;
 		}
-		void SetupDropbox()
+
+		void SetupDropbox ()
 		{
 			var t = Task.Factory.StartNew (() => {
-				DropboxDatabase.Shared.Init();
-				DropboxDatabase.Shared.LoadData();
+				DropboxDatabase.Shared.Init ();
+				DropboxDatabase.Shared.LoadData ();
 			});
 		}
 	}
