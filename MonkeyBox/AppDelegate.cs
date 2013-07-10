@@ -5,6 +5,7 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using DropBoxSync.iOS;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace MonkeyBox
 {
@@ -69,7 +70,7 @@ namespace MonkeyBox
 		{
 			var t = Task.Factory.StartNew (() => {
 				DropboxDatabase.Shared.Init ();
-				DropboxDatabase.Shared.LoadData ();
+				//DropboxDatabase.Shared.DeleteAll();
 			});
 		}
 	}
