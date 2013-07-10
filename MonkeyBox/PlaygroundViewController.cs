@@ -44,6 +44,7 @@ namespace MonkeyBox
 		}
 
 
+
 	}
 
 	public class PlayGroundView : UIView
@@ -94,6 +95,14 @@ namespace MonkeyBox
 					return;
 				currentMonkey = value;
 				this.BringSubviewToFront (currentMonkey);
+				for (int i = 0; i < Subviews.Length; i ++) {
+					var view = Subviews [i] as MonkeyView;
+					view.Monkey.Z = i;
+					Parent.UpdateMonkey (view.Monkey);
+				}
+
+
+
 			}
 		}
 
