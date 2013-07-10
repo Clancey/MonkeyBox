@@ -1,14 +1,18 @@
 using System;
 using MonoTouch.UIKit;
+using MonoTouch.CoreGraphics;
+using System.Drawing;
 
 namespace MonkeyBox
 {
 	public class MonkeyView : UIControl
 	{
 		UIImageView image;
-		public MonkeyView (string monkeyName)
+		public Monkey Monkey { get; private set; }
+		public MonkeyView (Monkey monkey)
 		{
-			image = new UIImageView (UIImage.FromBundle (monkeyName));
+			Monkey = monkey;
+			image = new UIImageView (UIImage.FromBundle (monkey.Name));
 			this.AddSubview (image);
 			this.Frame = image.Frame;
 		}
@@ -25,6 +29,27 @@ namespace MonkeyBox
 		{
 			base.TouchesBegan (touches, evt);
 			CurrentPlayground.CurrentMonkey = this;
+		}
+
+		public void Update(Monkey monkey, RectangleF bounds)
+		{
+			var transform = CGAffineTransform.MakeIdentity ();
+			transform.Rotate (monkey.Rotation);
+			transform.Scale (monkey.Scale, monkey.Scale);
+
+			var x = bounds.Width * monkey.X;
+			var y = bounds.Height * monkey.Y;
+			this.Center = new PointF (x, y);
+
+		}
+		void UpdateMonkey(int Z,RectangleF bounds)
+		{
+			Monkey.X = bounds.Width / Center.X;
+			Monkey.Y = bounds.Height / Center.Y;
+
+
+			Monkey.Scale = Transform.GetScale ();
+			Monkey.Rotation = Transform.GetRotation ();
 		}
 	}
 }

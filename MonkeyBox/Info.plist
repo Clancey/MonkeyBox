@@ -21,6 +21,19 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>3.2</string>
+	<string>6.0</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.xamarin.monkeybox</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.xamarin.monkeybox</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>db-zva4sa0z5xbz3cu</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

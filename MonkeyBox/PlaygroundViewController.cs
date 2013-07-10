@@ -3,6 +3,7 @@ using MonoTouch.UIKit;
 using System.Linq;
 using MonoTouch.CoreImage;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace MonkeyBox
 {
@@ -13,11 +14,34 @@ namespace MonkeyBox
 		public PlaygroundViewController ()
 		{
 		}
+		public override void ViewWillAppear (bool animated)
+		{
+			DropboxDatabase.Shared.MonkeysUpdated += HandleMonkeysUpdated;
+			PlayGroundView.UpdateMonkeys (DropboxDatabase.Shared.Monkeys);
+			base.ViewWillAppear (animated);
+		}
+		public override void ViewDidDisappear (bool animated)
+		{
+			DropboxDatabase.Shared.MonkeysUpdated -= HandleMonkeysUpdated;
+			base.ViewDidDisappear (animated);
+		}
+
+		void HandleMonkeysUpdated (object sender, EventArgs e)
+		{
+			PlayGroundView.UpdateMonkeys (DropboxDatabase.Shared.Monkeys);
+		}
 
 		public override void LoadView ()
 		{
 			View = PlayGroundView = new PlayGroundView ();
 		}
+
+		public void UpdateMonkey()
+		{
+
+		}
+
+
 	}
 
 	public class PlayGroundView : UIView
@@ -35,13 +59,24 @@ namespace MonkeyBox
 			var panGesture = new UIPanGestureRecognizer (Move);
 			this.AddGestureRecognizer (panGesture);
 
-			this.AddSubview (new MonkeyView ("Fred"));
-			this.AddSubview (new MonkeyView ("George"));
-			this.AddSubview (new MonkeyView ("Hootie"));
-			this.AddSubview (new MonkeyView ("Julian"));
-			this.AddSubview (new MonkeyView ("Nim"));
-			this.AddSubview (new MonkeyView ("Pepe"));
 			this.BackgroundColor = UIColor.DarkGray;
+		}
+		Dictionary<Monkey, MonkeyView> MonkeyDictionary = new Dictionary<Monkey, MonkeyView> ();
+		public void UpdateMonkeys(Monkey[] monkeys)
+		{
+			UIView.BeginAnimations ("monkeys");
+			for(int i = 0; i < monkeys.Length; i ++){
+				Monkey monkey = monkeys[i];
+				MonkeyView view;
+				MonkeyDictionary.TryGetValue(monkey,out view);
+				if (view == null){
+					view = new MonkeyView (monkey);
+					MonkeyDictionary.Add(monkey,view);
+				}
+				view.Update (monkey, this.Bounds);
+				this.InsertSubview(view,i);
+			}
+			UIView.CommitAnimations ();
 		}
 
 		MonkeyView currentMonkey;

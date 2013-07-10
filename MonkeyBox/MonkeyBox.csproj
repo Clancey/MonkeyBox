@@ -23,6 +23,8 @@
     <ConsolePause>false</ConsolePause>
     <MtouchLink>None</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
+    <MtouchI18n />
+    <MtouchArch>ARMv7</MtouchArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>full</DebugType>
@@ -44,6 +46,8 @@
     <ConsolePause>false</ConsolePause>
     <MtouchDebug>true</MtouchDebug>
     <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchI18n />
+    <MtouchArch>ARMv7</MtouchArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -80,6 +84,9 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
+    <Reference Include="DropBoxSync.iOS">
+      <HintPath>..\Components\dropboxsync-1.9\lib\ios\DropBoxSync.iOS.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
@@ -90,8 +97,10 @@
   <ItemGroup>
     <Compile Include="AppDelegate.cs" />
     <Compile Include="MonkeyView.cs" />
-    <Compile Include="Playground.cs" />
     <Compile Include="PlaygroundViewController.cs" />
+    <Compile Include="DropboxDatabase.cs" />
+    <Compile Include="Monkey.cs" />
+    <Compile Include="Extensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -107,5 +116,12 @@
     <BundleResource Include="Resources\Nim%402x.png" />
     <BundleResource Include="Resources\Pepe.png" />
     <BundleResource Include="Resources\Pepe%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <XamarinComponentReference Include="dropboxsync">
+      <InstallationInProgress>False</InstallationInProgress>
+      <Version>1.9</Version>
+      <Visible>False</Visible>
+    </XamarinComponentReference>
   </ItemGroup>
 </Project>
