@@ -38,7 +38,7 @@ namespace MonkeyBox
 			});
 		}
 
-		public void LoadData ()
+		public Task LoadData ()
 		{
 			var task = Task.Factory.StartNew (() => {
 				var table = store.GetTable ("monkeys");
