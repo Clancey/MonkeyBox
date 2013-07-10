@@ -8,7 +8,7 @@ namespace MonkeyBox
 		static Random random = new Random();
 		public Monkey ()
 		{
-			Scale = (float)Math.Max(random.NextDouble(),.25);
+			Scale = (float)Math.Max(random.NextDouble(),.33);
 			X = (float)random.NextDouble();
 			Y = (float)random.NextDouble();
 		}
