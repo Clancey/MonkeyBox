@@ -40,7 +40,7 @@ namespace MonkeyBox
 
 		public void LoadData ()
 		{
-			//var task = Task.Factory.StartNew (() => {
+			var task = Task.Factory.StartNew (() => {
 				var table = store.GetTable ("monkeys");
 				DBError error;
 				var results = table.Query (new NSDictionary (), out error);
@@ -53,8 +53,8 @@ namespace MonkeyBox
 					if(MonkeysUpdated != null)
 						MonkeysUpdated(this,EventArgs.Empty);
 				});
-//			});
-//			return task;
+			});
+			return task;
 		}
 
 		void populateMonkeys ()
