@@ -16,12 +16,14 @@ namespace MonkeyBox
 		}
 		public override void ViewWillAppear (bool animated)
 		{
+			PlayGroundView.Parent = this;
 			DropboxDatabase.Shared.MonkeysUpdated += HandleMonkeysUpdated;
 			PlayGroundView.UpdateMonkeys (DropboxDatabase.Shared.Monkeys);
 			base.ViewWillAppear (animated);
 		}
 		public override void ViewDidDisappear (bool animated)
 		{
+			PlayGroundView.Parent = null;
 			DropboxDatabase.Shared.MonkeysUpdated -= HandleMonkeysUpdated;
 			base.ViewDidDisappear (animated);
 		}
@@ -36,9 +38,9 @@ namespace MonkeyBox
 			View = PlayGroundView = new PlayGroundView ();
 		}
 
-		public void UpdateMonkey()
+		public void UpdateMonkey(Monkey monkey)
 		{
-
+			DropboxDatabase.Shared.Update (monkey);
 		}
 
 
@@ -47,7 +49,7 @@ namespace MonkeyBox
 	public class PlayGroundView : UIView
 	{
 		UIPinchGestureRecognizer pinchGesture;
-
+		public PlaygroundViewController Parent;
 		public PlayGroundView ()
 		{
 			pinchGesture = new UIPinchGestureRecognizer (Scale);
@@ -99,24 +101,22 @@ namespace MonkeyBox
 
 		void Scale (UIPinchGestureRecognizer gesture)
 		{
-			try {
-				if (CurrentMonkey == null)
-					return;
-				if (gesture.State == UIGestureRecognizerState.Began)
-					lastScale = 1f;
-				var scale = 1f - (lastScale - gesture.Scale);
+			if (CurrentMonkey == null)
+				return;
+			if (gesture.State == UIGestureRecognizerState.Began)
+				lastScale = 1f;
+			var scale = 1f - (lastScale - gesture.Scale);
 
-				var transform = CurrentMonkey.Transform;
-				transform.Scale (scale, scale);
-				CurrentMonkey.Transform = transform;
+			var transform = CurrentMonkey.Transform;
+			transform.Scale (scale, scale);
+			CurrentMonkey.Transform = transform;
 
-				Console.WriteLine (transform);
-				lastScale = gesture.Scale;
-				Console.WriteLine (scale);
-			} catch (Exception ex) {
-				Console.WriteLine (ex);
+			lastScale = gesture.Scale;
+			if(gesture.State == UIGestureRecognizerState.Ended)
+			{
+				CurrentMonkey.UpdateMonkey(0,this.Bounds);
+				Parent.UpdateMonkey(CurrentMonkey.Monkey);
 			}
-
 		}
 
 		float lastRotation = 0f;
@@ -127,6 +127,8 @@ namespace MonkeyBox
 				return;
 			if (gesture.State == UIGestureRecognizerState.Ended) {
 				lastRotation = 0;
+				CurrentMonkey.UpdateMonkey(0,this.Bounds);
+				Parent.UpdateMonkey(CurrentMonkey.Monkey);
 				return;
 			}
 			var rotation = 0 - (lastRotation - gesture.Rotation);
@@ -152,6 +154,11 @@ namespace MonkeyBox
 			point.Y += initialPoint.Y;
 
 			CurrentMonkey.Center = point;
+			if(gesture.State == UIGestureRecognizerState.Ended)
+			{
+				CurrentMonkey.UpdateMonkey(0,this.Bounds);
+				Parent.UpdateMonkey(CurrentMonkey.Monkey);
+			}
 		}
 	}
 }

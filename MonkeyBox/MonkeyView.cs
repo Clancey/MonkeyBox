@@ -42,10 +42,10 @@ namespace MonkeyBox
 			this.Center = new PointF (x, y);
 
 		}
-		void UpdateMonkey(int Z,RectangleF bounds)
+		public void UpdateMonkey(int Z,RectangleF bounds)
 		{
-			Monkey.X = bounds.Width / Center.X;
-			Monkey.Y = bounds.Height / Center.Y;
+			Monkey.X = Center.X / bounds.Width;
+			Monkey.Y = Center.Y / bounds.Height;
 
 
 			Monkey.Scale = Transform.GetScale ();

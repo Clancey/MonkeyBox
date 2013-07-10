@@ -37,18 +37,45 @@ namespace MonkeyBox
 				LoadData();
 			});
 		}
-
+		public Dictionary<string,DBRecord> records = new Dictionary<string, DBRecord> ();
+		public Dictionary<string,Monkey> monkeyDictionary = new Dictionary<string, Monkey> ();
 		public Task LoadData ()
 		{
 			var task = Task.Factory.StartNew (() => {
 				var table = store.GetTable ("monkeys");
 				DBError error;
 				var results = table.Query (new NSDictionary (), out error);
+
+				//This deletes old data
+//				foreach(var result in results)
+//				{
+//					result.DeleteRecord();
+//				}
+//				store.Sync(null);
+//				populateMonkeys();
+//				results = table.Query (new NSDictionary (), out error);
+				///
+				records = results.ToDictionary(x=> x.Fields["Name"].ToString(),x=> x);
 				if (results.Length == 0) {
 					populateMonkeys ();
 					return;
 				}
-				Monkeys = results.Select(x=> x.ToMonkey()).ToArray();
+				foreach(var result in results)
+				{
+					var name = result.Fields["Name"].ToString();
+					Monkey monkey;
+					monkeyDictionary.TryGetValue(name, out monkey);
+					if(monkey == null)
+					{
+						monkey = result.ToMonkey();
+						monkeyDictionary.Add(name,monkey);
+					}
+					else
+					{
+						monkey.Update(result);
+					}
+				}
+				Monkeys = monkeyDictionary.Select(x=> x.Value).ToArray();
 				store.BeginInvokeOnMainThread(()=>{
 					if(MonkeysUpdated != null)
 						MonkeysUpdated(this,EventArgs.Empty);
@@ -68,6 +95,13 @@ namespace MonkeyBox
 			store.Sync (error);
 			Console.WriteLine (error);
 
+		}
+		public void Update(Monkey monkey)
+		{
+			DBRecord record;
+			records.TryGetValue (monkey.Name, out record);
+			record.Update (monkey.ToDictionary ());
+			store.SyncAsync (null);
 		}
 
 		public Monkey[] Monkeys { get; set; }
@@ -98,15 +132,19 @@ namespace MonkeyBox
 
 		public static Monkey ToMonkey (this DBRecord record)
 		{
-			return new Monkey {
-				Name = record.Fields[new NSString("Name")].ToString(),
-				Rotation = float.Parse(record.Fields[new NSString("Rotation")].ToString()),
-				Scale = float.Parse(record.Fields[new NSString("Scale")].ToString()),
-				X = float.Parse(record.Fields[new NSString("X")].ToString()),
-				Y = float.Parse(record.Fields[new NSString("Y")].ToString()),
-				Z = int.Parse(record.Fields[new NSString("Z")].ToString()),
-			};
+			return new Monkey ().Update (record);
 			
+		}
+
+		public static Monkey Update( this Monkey monkey, DBRecord record)
+		{
+			monkey.Name = record.Fields [new NSString ("Name")].ToString ();
+			monkey.Rotation = float.Parse (record.Fields [new NSString ("Rotation")].ToString ());
+			monkey.Scale = float.Parse (record.Fields [new NSString ("Scale")].ToString ());
+			monkey.X = float.Parse (record.Fields [new NSString ("X")].ToString ());
+			monkey.Y = float.Parse (record.Fields [new NSString ("Y")].ToString ());
+			monkey.Z = int.Parse (record.Fields [new NSString ("Z")].ToString ());
+			return monkey;
 		}
 	}
 }
