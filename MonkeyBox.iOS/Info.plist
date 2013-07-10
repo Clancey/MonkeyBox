@@ -35,5 +35,7 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleDisplayName</key>
+	<string>MonkeyBox</string>
 </dict>
 </plist>
